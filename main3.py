@@ -28,8 +28,8 @@ params = [{
     'beam': 3.23,
     'draft': 1.85,
     'displacement': 3750,
-    'sup': 53,
-    'age': 0,
+    'sup': 52,
+    'age': 2022 - 1999,
     'abattibile': True,
     'rating': 0,
     'spi': False
@@ -41,7 +41,7 @@ params = [{
     'displacement': 5100,
     'sup': 52,
     'abattibile': True,
-    'age': 0,
+    'age': 2022 - 1987,
     'rating': 0,
     'spi': False
 }, {
@@ -52,18 +52,18 @@ params = [{
     'displacement': 3500,
     'sup': 66,
     'abattibile': True,
-    'age': 0,
+    'age': 2022 - 1993,
     'rating': 0,
     'spi': False
 }, {
     'model': 'x99',
-    'loa': 9.8,
+    'loa': 9.96,
     'beam': 3,
     'draft': 1.79,
     'displacement': 3200,
-    'sup': 52.2,
+    'sup': 63,
     'abattibile': True,
-    'age': 0,
+    'age': 2022 - 1995,
     'rating': 0,
     'spi': True
 }, {
@@ -74,7 +74,7 @@ params = [{
     'displacement': 4700,
     'sup': 56.9,
     'abattibile': True,
-    'age': 0,
+    'age': 2022 - 2004,
     'rating': 0,
     'spi': True
 }, {
@@ -85,7 +85,7 @@ params = [{
     'displacement': 5003,
     'sup': 58.87,
     'abattibile': True,
-    'age': 0,
+    'age': 2022 - 1983,
     'rating': 0,
     'spi': True
 }, {
@@ -96,7 +96,18 @@ params = [{
     'displacement': 3600,
     'sup': 59,
     'abattibile': True,
-    'age': 0,
+    'age': 2022 - 2007,
+    'rating': 0,
+    'spi': True
+}, {
+    'model': 'first 40.7',
+    'loa': 11.93,
+    'beam': 3.75,
+    'draft': 2.40,
+    'displacement': 7100,
+    'sup': 85,
+    'abattibile': True,
+    'age': 2022 - 2002,
     'rating': 0,
     'spi': True
 }]
@@ -127,9 +138,9 @@ def ratingOfBoat(boat = None, params = None):
         vmaxt = vmaxt - 0.5
 
     if params['spi']:
-        vmaxt *= 0.8
+        vmaxt *= 0.68
     else:
-        vmaxt *= 0.65
+        vmaxt *= 0.53
 
     # Potenza complessiva barca
     # Maggior valore => maggior velocita'
@@ -137,18 +148,14 @@ def ratingOfBoat(boat = None, params = None):
     dispt = (params['displacement']) 
 
     # Dal calcolo togliamo 1/10 peso * draft, dato che maggiore il pescaggio, maggiore la stabilita'
-    # dispt -= dispt / 10. * params['draft']
-    # dispt -= dispt * 1. / params['draft']
-
     sup = params['sup']
-
-    pow = sup / (dispt / params['loa'])
+    pow = sup / (dispt) * params['loa']
 
     # Fattore di forma
     # Maggior fattore => maggior velocita'
-    ff =  (params['beam'] / params['loa']) * params['draft']
+    #ff =  1 / (params['beam'] / params['loa']) #* params['draft']
 
-    vmax2 = vmaxt * pow * ff
+    vmax2 = vmaxt * pow #* ff
     vmax = vmaxt + vmax2
 
     
@@ -157,12 +164,13 @@ def ratingOfBoat(boat = None, params = None):
 
     # Tempo per fare un miglio in secondi (e' il GPH orc)
     tod = 1 / vmax * 60. * 60.
+    tod += 0.9 * (params['age'])
 
     # Calcola il time on time
-    tot = vmax / 7
+    tot = (1/ tod * 60 * 60) / 7.
 
     # print ('Model: ', params['model'], 'VMAXT: ', vmaxt, 'VMAX: ', vmax, 'VMAX2: ', vmax2, 'FF: ', ff, 'Power: ', pow, 'TOD: ', tod)
-    print (params['model'], ',', vmaxtor, ',', vmaxt, ',', vmax, ',', vmax2, ',', ff, ',', pow, ',', tod, ',', tot)
+    print (params['model'], ',', "{:.2f}".format(vmaxtor), ',', "{:.2f}".format(vmaxt), ',', "{:.2f}".format(vmax), ',', "{:.2f}".format(vmax2), ',', "{:.2f}".format(ff), ',', "{:.2f}".format(pow), ',', "{:.2f}".format(tod), ',', "{:.4f}".format(tot))
 
     #print (params)
     #print ()
