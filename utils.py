@@ -25,8 +25,10 @@ def downloadData():
 
 
 def loadData(fileName="data/orc-data/ALL2021.json"):
+    print ('Loading orc data...')
     with open(fileName) as f:
         data = eval(f.read())
+    print ('Data loaded.')
     return data
 
 def dataToList(data):
@@ -34,3 +36,18 @@ def dataToList(data):
     for boat in data:
         boats.append(boat)
     return boats
+
+
+def findBoatModel(data, name, n=1):
+    def f(x):
+        try:
+            x['boat']['type'].lower().index(name.lower())
+            return True
+        except:
+            return False
+
+    l = list(filter(f, data))
+    if n == 1:
+        return l[0]
+    else:
+        return l[:n]

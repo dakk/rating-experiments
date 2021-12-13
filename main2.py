@@ -29,7 +29,7 @@ def fitness_func(solution, solution_idx, boat=None):
     try:
         output = evalute(solution, rboat)
         #print(output, rboat['rating']['gph'])
-        fitness = 1. / numpy.abs(output - rboat['rating']['gph'])
+        fitness = 1. / numpy.abs(output - rboat['rating']['triple_inshore'][1]) #['gph'])
         if fitness > 1.0:
             fitness = 1.0
         return fitness
@@ -110,7 +110,7 @@ print("Fitness value of the best solution = {solution_fitness}".format(solution_
 
 b = random.choice(data)
 prediction = evalute(solution, b)
-desider = b['rating']['gph']
+desider = b['rating']['triple_inshore'][1] #['gph']
 print("Predicted output based on the best solution : {prediction} (desidered {desider})".format(prediction=prediction, desider=desider))
 
 
