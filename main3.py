@@ -12,7 +12,7 @@ import math
 
 
 # Parametri:
-# - elica fissa / abattibile
+# - elica fissa / foldable
 # - age
 # - peso
 # - lunghezza
@@ -29,18 +29,42 @@ params = [{
     'draft': 1.85,
     'displacement': 3750,
     'sup': 52,
-    'age': 2022 - 1999,
-    'abattibile': True,
+    'age': 2022 - 2004,
+    'foldable': True,
     'rating': 0,
     'spi': False
 }, {
+    'model': 'comet 12',
+    'loa': 12,
+    'beam': 3.90,
+    'draft': 2.05,
+    'displacement': 7500,
+    'sup': 96,
+    'foldable': True,
+    'age': 2022 - 1985,
+    'rating': 0,
+    'spi': False
+    
+    },{
+    'model': 'attalia 32',
+    'loa': 9.70,
+    'beam': 3.20,
+    'draft': 1.75,
+    'displacement': 3400,
+    'sup': 51.6,
+    'foldable': True,
+    'age': 2022 - 1988,
+    'rating': 0,
+    'spi': False
+    
+    },{
     'model': 'comet 333',
     'loa': 10.3,
     'beam': 3.35,
     'draft': 1.95,
     'displacement': 5100,
     'sup': 52,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 1987,
     'rating': 0,
     'spi': False
@@ -51,7 +75,7 @@ params = [{
     'draft': 1.95,
     'displacement': 3500,
     'sup': 66,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 1993,
     'rating': 0,
     'spi': False
@@ -62,7 +86,7 @@ params = [{
     'draft': 1.79,
     'displacement': 3200,
     'sup': 63,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 1995,
     'rating': 0,
     'spi': True
@@ -73,7 +97,7 @@ params = [{
     'draft': 1.95,
     'displacement': 4700,
     'sup': 56.9,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 2004,
     'rating': 0,
     'spi': True
@@ -84,7 +108,7 @@ params = [{
     'draft': 1.80,
     'displacement': 5003,
     'sup': 58.87,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 1983,
     'rating': 0,
     'spi': True
@@ -95,7 +119,7 @@ params = [{
     'draft': 1.95,
     'displacement': 3600,
     'sup': 59,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 2007,
     'rating': 0,
     'spi': True
@@ -106,8 +130,19 @@ params = [{
     'draft': 2.40,
     'displacement': 7100,
     'sup': 85,
-    'abattibile': True,
+    'foldable': True,
     'age': 2022 - 2002,
+    'rating': 0,
+    'spi': True
+}, {
+    'model': 'polaris 33',
+    'loa': 10.13,
+    'beam': 3.38,
+    'draft': 1.82,
+    'displacement': 4300,
+    'sup': 63.44,
+    'foldable': True,
+    'age': 2022 - 1979,
     'rating': 0,
     'spi': True
 }]
@@ -124,63 +159,50 @@ def ratingOfBoat(boat = None, params = None):
             'sup': boat['boat']['sizes']['genoa'] + boat['boat']['sizes']['main'],
             'age': 2022 - boat['boat']['year'],
             'rating': boat['rating'],
-            'abattibile': True,
+            'foldable': True,
             'spi': True
         }
 
-    #- (2022 - boat['boat']['year']) / 10.
 
     # Velocita' massima teorica in nodi
-    vmaxtor = 1.35 * math.sqrt(params['loa'] * 3.28084)
-    vmaxt = vmaxtor
+    vmaxt = 1.35 * math.sqrt(params['loa'] * 3.28084)
 
-    if not params['abattibile']:
+    # Abbuoniamo 0.5 di velocita' nel caso di elica fissa
+    if not params['foldable']:
         vmaxt = vmaxt - 0.5
 
+    # Moltiplichiamo per un coefficiente di correzione che ci permette di stare in linea
+    # coi valori ORC: a seconda che si usi o meno vele asimettriche, si usa un coefficiente
+    # diverso.
     if params['spi']:
         vmaxt *= 0.68
     else:
         vmaxt *= 0.53
 
     # Potenza complessiva barca
-    # Maggior valore => maggior velocita'
-    # Bisogna includere anche il draft, dato che maggiore il pescaggio, maggiore la stabilita'
-    dispt = (params['displacement']) 
+    pow = params['sup'] / (params['displacement']) * params['loa']
 
-    # Dal calcolo togliamo 1/10 peso * draft, dato che maggiore il pescaggio, maggiore la stabilita'
-    sup = params['sup']
-    pow = sup / (dispt) * params['loa']
-
-    # Fattore di forma
-    # Maggior fattore => maggior velocita'
-    #ff =  1 / (params['beam'] / params['loa']) #* params['draft']
-
-    vmax2 = vmaxt * pow #* ff
-    vmax = vmaxt + vmax2
-
-    
-    # v = s/t
-    # t = s/v
+    # Calcoliamo la vmax in relazione alla potenza
+    vmax = vmaxt + vmaxt * pow 
 
     # Tempo per fare un miglio in secondi (e' il GPH orc)
     tod = 1 / vmax * 60. * 60.
+
+    # Abbuoniamo 0.9 secondi per miglio per anno di eta
     tod += 0.9 * (params['age'])
 
-    # Calcola il time on time
-    tot = (1/ tod * 60 * 60) / 7.
+    # Calcola il time on time partendo dal tod
+    tot = (1 / tod * 60 * 60) / 7.
 
-    # print ('Model: ', params['model'], 'VMAXT: ', vmaxt, 'VMAX: ', vmax, 'VMAX2: ', vmax2, 'FF: ', ff, 'Power: ', pow, 'TOD: ', tod)
-    print (params['model'], ',', "{:.2f}".format(vmaxtor), ',', "{:.2f}".format(vmaxt), ',', "{:.2f}".format(vmax), ',', "{:.2f}".format(vmax2), ',', "{:.2f}".format(ff), ',', "{:.2f}".format(pow), ',', "{:.2f}".format(tod), ',', "{:.4f}".format(tot))
+    print (params['model'], ',', "{:.2f}".format(vmaxt), ',', "{:.2f}".format(vmax), ',', "{:.2f}".format(pow), ',', "{:.2f}".format(tod), ',', "{:.4f}".format(tot))
 
-    #print (params)
-    #print ()
 
-print('model, vmaxt, vmaxtcor, vmax, vmax2, ff, power, tod, tot')
+print('model, vmaxt, vmax, power, tod, tot')
 for x in params:
     ratingOfBoat(params=x)
 
 
 # data = utils.dataToList(utils.loadData())
-# for y in ['first 31.7', 'comet 33', 'jod 35']:
-#     for x in [utils.findBoatModel(data, y, n = 1)]:
-#         ratingOfBoat(x)
+# for y in ['first 31.7', 'comet 33', 'jod 35', 'farr 40', 'sunfast 3200', 'comet 333', 'comet 1050', 'x99', 'first 40.7']:
+#     for x in utils.findBoatModel(data, y, n=6):
+#         ratingOfBoat(boat=x)
